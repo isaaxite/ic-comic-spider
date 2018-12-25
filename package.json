@@ -23,6 +23,9 @@
   "dependencies": {
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
+    "commander": "^2.19.0",
+    "gulp": "^4.0.0",
+    "ora": "^3.0.0",
     "request": "^2.88.0"
   }
 }
