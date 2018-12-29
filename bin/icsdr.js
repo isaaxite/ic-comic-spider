@@ -1,4 +1,6 @@
-const program = require('commander')
+#!/usr/bin/env node
+
+const program = require('commander');
 const spider = require('../index');
 const store = require('../lib/store');
 const argvs = process.argv.slice(2);

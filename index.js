@@ -5,7 +5,7 @@ const helper = require('./lib/helper');
 const ora = require('ora');
 
 exports.init = () => {
-  const configPath = path.resolve('./config.json');
+  const configPath = path.resolve(process.cwd(), './config.json');
   const defaultConfig = {
     comic: "",
     catalogs: [],
@@ -20,7 +20,8 @@ exports.init = () => {
 exports.readConfig = (_configPath) => {
   let config = {};
   try {
-    const configPath = _configPath || './config.json';
+    const defaultConfigPath = path.resolve(process.cwd(), './config.json');
+    const configPath = _configPath || defaultConfigPath;
     config = require(configPath);
   } catch (error) {
     console.log('can not found the config.json');

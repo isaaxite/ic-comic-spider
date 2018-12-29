@@ -1,8 +1,11 @@
 {
-  "name": "comic-spider",
-  "version": "1.0.0",
+  "name": "ic-comic-spider",
+  "version": "1.0.6",
   "description": "comic script",
   "main": "index.js",
+  "bin": {
+    "icsdr": "./bin/icsdr.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +16,10 @@
   "keywords": [
     "comic",
     "spider"
+  ],
+  "files": [
+    "bin",
+    "lib"
   ],
   "author": "isaac",
   "license": "ISC",
