@@ -1,8 +1,11 @@
 {
-  "name": "comic-spider",
-  "version": "1.0.0",
+  "name": "ic-comic-spider",
+  "version": "1.0.6",
   "description": "comic script",
   "main": "index.js",
+  "bin": {
+    "icsdr": "./bin/icsdr.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,6 +17,10 @@
     "comic",
     "spider"
   ],
+  "files": [
+    "bin",
+    "lib"
+  ],
   "author": "isaac",
   "license": "ISC",
   "bugs": {
@@ -23,6 +30,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
-    "request": "^2.88.0"
+    "commander": "^2.19.0",
+    "ora": "^3.0.0"
   }
 }
