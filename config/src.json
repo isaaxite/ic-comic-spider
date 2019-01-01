@@ -1,0 +1,12 @@
+[
+  {
+    "name": "dm5",
+    "src": "http://www.dm5.com/",
+    "search": "http://www.dm5.com/search?title=#name#&language=1"
+  },
+  {
+    "name": "verydm",
+    "src": "http://www.verydm.com/",
+    "search": "http://www.verydm.com/index.php?r=comic%2Fsearch&keyword=#name#"
+  }
+]
