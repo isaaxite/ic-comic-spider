@@ -35,6 +35,14 @@ icsdr http://www.verydm.com/manhua/yaren http://www.verydm.com/manhua/kuangduzhi
 // or
 icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan http://www.verydm.com/manhua/kuangduzhiyuan
 
+# 自定义分卷
+icsdr -m [comic name] -n [<num> | <xxxp> | <xxxc>]
+
+// 基于章节数分卷
+icsdr -m 一拳超人 -n 20c
+
+// 基于图片数量分卷，并不会严格按照600张图片分割
+icsdr -m 一拳超人 -n 600p
 ```
 
 

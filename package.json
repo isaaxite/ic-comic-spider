@@ -1,6 +1,6 @@
 {
   "name": "ic-comic-spider",
-  "version": "1.0.6",
+  "version": "2.1.0",
   "description": "comic script",
   "main": "index.js",
   "bin": {
