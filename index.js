@@ -43,3 +43,7 @@ exports.run = async (catalogUrlList) => {
 exports.search = (keyword) => {
   tasks.search(keyword);
 }
+
+exports.merge = () => {
+  return tasks.merge();
+}
