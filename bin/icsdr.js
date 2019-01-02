@@ -12,7 +12,8 @@ const config = {};
 program
   .version(require('../package.json').version)
   .option('-i --init [filePath]', 'init variables file')
-  .option('-l --list [url]', 'catalog url list', (list) => {
+  .option('-l --list [url]', 'catalog url list', (sender) => {
+    const list = sender.split(',');
     config.catalogs = list;
   })
   .option('-s --search [comic]', 'search comic', (comicName) => {
@@ -21,7 +22,6 @@ program
   })
   .option('-S --start [start chapter]', 'name of start-chapter', (startChapter) => {
     options.isRange = true;
-    console.log(startChapter);
     config.startChapter = startChapter;
   })
   .option('-E --end [end chapter]', 'name of end-chapter', (endChapter) => {
