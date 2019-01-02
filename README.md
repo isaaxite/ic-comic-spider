@@ -45,7 +45,10 @@ icsdr -m 一拳超人 -n 20c
 // 基于图片数量分卷，并不会严格按照600张图片分割
 icsdr -m 一拳超人 -n 600p
 
-// 设定范围下载，使用章节名（可以简写，但必须是目录上章节名的简称）
+# 指定章节下载
+icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan --chapter 第19话
+
+# 设定范围下载，使用章节名（可以简写，但必须是目录上章节名的简称）
 icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan -S 19话
 
 icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan -S 19话 -E 26话

@@ -28,6 +28,11 @@ program
     options.isRange = true;
     config.endChapter = endChapter;
   })
+  .option('--chapter [specify chapter]', 'download designated chapter', (chapterName) => {
+    options.isRange = true;
+    config.startChapter = chapterName;
+    config.endChapter = chapterName;
+  })
   .option('-n --num [vol num]', 'volume number(chapter or picture)', (num) => {
     const unit = num.charAt(num.length - 1);
     const realNum = Number.parseInt(num);
