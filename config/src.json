@@ -8,5 +8,10 @@
     "name": "verydm",
     "src": "http://www.verydm.com/",
     "search": "http://www.verydm.com/index.php?r=comic%2Fsearch&keyword=#name#"
+  },
+  {
+    "name": "动漫狂",
+    "src": "https://www.cartoonmad.com/",
+    "search": ""
   }
 ]

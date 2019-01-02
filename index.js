@@ -34,7 +34,8 @@ exports.run = async (catalogUrlList) => {
     const { enName } = helper.parseCataLogUrl(catalogUrl);
     const spin = ora(`[${enName}] download...`).start();
     const { chapterList, comicName } = await tasks.parseCatalog(catalogUrl);
-    await tasks.downloadComic(chapterList, comicName);
+    const realChapterList = helper.clipChapterList(chapterList);
+    await tasks.downloadComic(realChapterList, comicName);
     await tasks.handleErrors(comicName);
     spin.succeed(`[${enName}] finish!`);
   }
