@@ -46,5 +46,7 @@ exports.search = (keyword) => {
 }
 
 exports.merge = () => {
-  return tasks.merge();
+  const spin = ora(`merging...`).start();
+  tasks.merge();
+  spin.succeed(`finish!`);
 }
