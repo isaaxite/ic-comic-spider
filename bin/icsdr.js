@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
@@ -7,12 +8,16 @@ const helper = require('../lib/helper');
 const store = require('../lib/store');
 const argvs = process.argv.slice(2);
 const isNormalMode = !(argvs[0] && argvs[0].startsWith('-'));
-const { CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE } = require('../config/constant');
+const { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } = require('../config/constant');
 const options = {};
 const config = {};
 const invokeStatus = {};
-const isReadDefaultConfig = argvs.some((arg) => {
-  return !arg.includes('http') && !arg.includes('catalogs');
+const isReadDefaultConfig = argvs.every((arg) => {
+  return !arg.includes('http')
+    && !arg.includes('catalogs')
+    && !arg.includes('merge')
+    && !arg.includes('search')
+    && !arg.includes('crop');
 });
 
 const parseInfo = program
@@ -79,11 +84,78 @@ const parseInfo = program
   })
   .option('--merge [filepath]', 'comic dir path', (comicSrc) => {
     const srcDir = path.join(process.cwd(), comicSrc);
-    const comicName = srcDir.split(path.sep).pop();
+    const comicName = path.basename(srcDir);
     options.mode = MERGE;
     config.comicSrc = srcDir;
     config.comicName = comicName;
     invokeStatus.merge = true;
+  })
+  .option('--crop [filepath]', 'picture filepath, chapter dir or comic dir', (unknowPath) => {
+    let ext;
+    let tempPath = '';
+    let tempPathInfo = {};
+    const COMIC_DIR = 2;
+    const CHAPTER_DIR = 1;
+    const PICTURE_PATH = 0;
+    const dirNames = [];
+    const absolutePath = !path.isAbsolute(unknowPath)
+        ? path.join(process.cwd(), unknowPath)
+        : unknowPath;
+    const pathInfo = path.parse(absolutePath);
+
+    ext = pathInfo.ext;
+    tempPath = absolutePath;
+    while (!ext) {
+      let tempName = '';
+      let pathInfo = '';
+      tempName = helper.getFilteredDirContent(tempPath)[0];
+      tempPath = path.join(absolutePath, tempName);
+      pathInfo = path.parse(tempPath);
+      dirNames.push(pathInfo.base);
+      ext = pathInfo.ext;
+    }
+    switch (dirNames.length) {
+      case COMIC_DIR:
+        const filteredChapterNames = helper.getFilteredDirContent(absolutePath);
+        const chapterDirs = filteredChapterNames.map((chapterName) => {
+          return path.resolve(absolutePath, chapterName);
+        });
+        config.comicName = path.basename(absolutePath);
+        config.cropDir = chapterDirs;
+        break;
+      
+      case CHAPTER_DIR:
+        tempPathInfo = path.parse(absolutePath);
+        config.comicName = path.basename(tempPathInfo.dir);
+        config.cropDir = [absolutePath];
+        break;
+      
+      case PICTURE_PATH:
+        const basename = path.basename(absolutePath);
+        tempPathInfo = path.parse(absolutePath);
+        const data = fs.readFileSync(absolutePath);
+        const tempDirPath = path.join(tempPathInfo.dir, TEMP_DIR);
+        const tempPath = path.join(tempDirPath, basename);
+        if (!fs.existsSync(tempDirPath)) {
+          fs.mkdirSync(tempDirPath);
+        }
+        fs.writeFileSync(tempPath, data);
+        config.cropDir = [tempDirPath];
+        config.comicName = TEMP_DIR;
+        break;
+
+      default:
+        helper.warn('wrong path');
+        process.exit();
+    }
+    options.mode = CROP;
+    options.isCrop = true;
+    invokeStatus.crop = true;
+  })
+  .option('--swap [boolean]', 'is need to swap crop order', (sender) => {
+    const isValid = +sender > 0 || sender === 'true';
+    config.isSwap = isValid;
+    invokeStatus.swap = true;
   })
   .parse(process.argv);
 
