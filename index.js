@@ -1,52 +1,23 @@
-const fs = require('fs');
-const path =require('path');
+const store = require('./lib/store');
 const tasks = require('./lib/tasks');
-const helper = require('./lib/helper');
-const ora = require('ora');
+const { CONFIG, SEARCH, MERGE } = require('./config/constant');
 
-exports.init = () => {
-  const configPath = path.resolve(process.cwd(), './config.json');
-  const defaultConfig = {
-    comic: "",
-    catalogs: [],
-    out: ""
-  };
+exports.init = (options, config) => {
+  store.set({ options, ...config });
+  switch (options.mode) {
+    case CONFIG:
+      tasks.config();
+      break;
+    
+    case SEARCH:
+      tasks.search();
+      break;
 
-  if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
+    case MERGE:
+      tasks.merge();
+      break;
+
+    default:
+      tasks.run();
   }
 };
-
-exports.readConfig = (_configPath) => {
-  let config = {};
-  try {
-    const defaultConfigPath = path.resolve(process.cwd(), './config.json');
-    const configPath = _configPath || defaultConfigPath;
-    config = require(configPath);
-  } catch (error) {
-    console.log('can not found the config.json');
-  }
-  return config;
-};
-
-exports.run = async (catalogUrlList) => {
-  for (const catalogUrl of catalogUrlList) {
-    const { enName } = helper.parseCataLogUrl(catalogUrl);
-    const spin = ora(`[${enName}] download...`).start();
-    const { chapterList, comicName } = await tasks.parseCatalog(catalogUrl);
-    const realChapterList = helper.clipChapterList(chapterList);
-    await tasks.downloadComic(realChapterList, comicName);
-    await tasks.handleErrors(comicName);
-    spin.succeed(`[${enName}] finish!`);
-  }
-};
-
-exports.search = (keyword) => {
-  tasks.search(keyword);
-}
-
-exports.merge = () => {
-  const spin = ora(`merging...`).start();
-  tasks.merge();
-  spin.succeed(`finish!`);
-}

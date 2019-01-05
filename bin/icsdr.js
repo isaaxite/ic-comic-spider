@@ -1,72 +1,112 @@
 #!/usr/bin/env node
-
+const fs = require('fs');
+const path = require('path');
 const program = require('commander');
 const spider = require('../index');
+const helper = require('../lib/helper');
 const store = require('../lib/store');
 const argvs = process.argv.slice(2);
 const isNormalMode = !(argvs[0] && argvs[0].startsWith('-'));
-const isReadDefaultConfig = !argvs.length;
+const { CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE } = require('../config/constant');
 const options = {};
 const config = {};
+const invokeStatus = {};
+const isReadDefaultConfig = argvs.some((arg) => {
+  return !arg.includes('http') && !arg.includes('catalogs');
+});
 
-program
+const parseInfo = program
   .version(require('../package.json').version)
-  .option('-i --init [filePath]', 'init variables file')
-  .option('-l --list [url]', 'catalog url list', (sender) => {
-    const list = sender.split(',');
-    config.catalogs = list;
+  .option('--config [filePath]', 'config file path', (configPath) => {
+    options.mode = CONFIG;
+    config.configPath = configPath;
+    invokeStatus.config = true;
   })
-  .option('-s --search [comic]', 'search comic', (comicName) => {
-    options.isSearch = true;
-    config.comicName = comicName;
+  .option('--out [filePath]', 'file path of save dir', (outDir) => {
+    if (!fs.existsSync(outDir)) {
+      helper.warn('no such dir');
+      process.exit();
+    }
+    config.outDir = outDir;
+    invokeStatus.out = true;
   })
-  .option('-S --start [start chapter]', 'name of start-chapter', (startChapter) => {
+  .option('--catalogs [url]', 'catalog url list', (sender) => {
+    const catalogs = sender.split(',');
+    config.catalogs = catalogs;
+    invokeStatus.catalogs = true;
+  })
+  .option('--search [string]', 'search comic keyword', (keyword) => {
+    options.mode = SEARCH;
+    config.keyword = keyword;
+    invokeStatus.search = true;
+  })
+  .option('--start [string]', 'name of start-chapter', (startChapter) => {
     options.isRange = true;
     config.startChapter = startChapter;
+    invokeStatus.start = true;
   })
-  .option('-E --end [end chapter]', 'name of end-chapter', (endChapter) => {
+  .option('--end [string]', 'name of end-chapter', (endChapter) => {
     options.isRange = true;
     config.endChapter = endChapter;
+    invokeStatus.end = true;
   })
-  .option('--chapter [specify chapter]', 'download designated chapter', (chapterName) => {
+  .option('--range [string]', 'Separated by commas, such as 10,20', (rangeStr) => {
+    const [startChapter = 0, endChapter] = rangeStr.split(',');
+    options.isRange = true;
+    config.startChapter = startChapter;
+    config.endChapter = endChapter;
+    invokeStatus.range = true;
+  })
+  .option('--chapter [string]', 'download designated chapter', (chapterName) => {
     options.isRange = true;
     config.startChapter = chapterName;
     config.endChapter = chapterName;
+    invokeStatus.chapter = true;
   })
-  .option('-n --num [vol num]', 'volume number(chapter or picture)', (num) => {
+  .option('--volsize [number | string]', 'volume number(chapter or picture), such as 200(p) or 20c', (num) => {
     const unit = num.charAt(num.length - 1);
     const realNum = Number.parseInt(num);
-    const defaultUnit = realNum > 30 ? 'p' : 'c';
-    const realUnit = ['p', 'c'].includes(unit) ? unit : defaultUnit;
+    const realUnit = [UNIT_PICTURE, UNIT_CHAPTER].includes(unit) ? unit : UNIT_PICTURE;
+    if (Number.isNaN(realNum)) {
+      helper.warn('That is a wrong volume size');
+      process.exit();
+    }
     config.volSize = {
       num: realNum,
       unit: realUnit
     };
+    invokeStatus.num = true;
   })
-  .option('-m --merge [comic dirname]', 'comic dirname', (comicName) => {
-    options.isMerge = true;
+  .option('--merge [filepath]', 'comic dir path', (comicSrc) => {
+    const srcDir = path.join(process.cwd(), comicSrc);
+    const comicName = srcDir.split(path.sep).pop();
+    options.mode = MERGE;
+    config.comicSrc = srcDir;
     config.comicName = comicName;
+    invokeStatus.merge = true;
   })
   .parse(process.argv);
 
-if (program.init) {
-  spider.init();
-} else {
+(function __init() {
+  const events = parseInfo._events;
+  Object.keys(parseInfo._events).forEach((eventName) => {
+    const optionName = eventName.split(':').pop();
+    const isValid = parseInfo[optionName]
+      && !['version'].includes(optionName)
+      && !invokeStatus[optionName];
+    isValid && events[eventName]();
+  });
+
   if (isNormalMode) {
-    config.catalogs = argvs;
+    config.catalogs = argvs.filter((arg) => {
+      return arg.startsWith('http');
+    });
   }
-  
+
   if (isReadDefaultConfig) {
-    config = spider.readConfig();
+    const configPath = store.get('defaultConfigPath');
+    events['option:config'](configPath);
   }
 
-  store.set({ options, ...config });
-
-  if (options.isSearch) {
-    spider.search(config.comicName);
-  } else if (options.isMerge) {
-    spider.merge();
-  } else {
-    spider.run(config.catalogs);
-  }
-}
+  spider.init(options, config);
+})();

@@ -15,50 +15,110 @@ icsdr http://www.verydm.com/manhua/yaren
 ```
 可下载多个，空格分隔
 
+## 主要功能
+- 下载漫画；
+- 自定义分卷；
+- 搜索漫画；
+
 ## 更多下载选项
 ```
-# 直接读取配置下载漫画
+Usage: icsdr [options]
+
+Options:
+
+-V, --version                output the version number
+
+# 初始化配置 或 读取配置执行脚本
+--config [filePath]          config file path
+
+// 在当前目录初始化配置
+icsdr --config
+
+// 当前目录存在配置文件则读取，否则初始化配置
 icsdr
 
-# 当前目录下生成配置模板
-icsdr -i
+// 若存在配置文件则读取配置，否则初始化配置
+icsdr --config ../
+
+// 初始化配置
+icsdr --config
+
+# 设置漫画保存目录（不可单独使用）
+--out [filePath]             file path of save dir
+
+// exp
+icsdr --catalogs http://www.verydm.com/manhua/kuangduzhiyuan --out ../
+
+# 设置下载漫画的目录链接，可多个，半角逗号分割
+--catalogs [url]             catalog url list
+
+// 下载单个
+icsdr --catalogs http://www.verydm.com/manhua/kuangduzhiyuan
+// or
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan
+
+// 下载多个
+icsdr --catalogs http://www.verydm.com/manhua/kuangduzhiyuan,http://www.verydm.com/manhua/kuangduzhiyuan
+// or
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan http://www.verydm.com/manhua/kuangduzhiyuan
 
 # 搜索漫画
-icsdr -s 一拳超人
+--search [string]            search comic keyword
 
-# 下载漫画
-icsdr http://www.verydm.com/manhua/yiquanchaoren
+// exp
+icsdr --search 一拳超人
 
-# 下载多个
-# 此方式不能配合其他命令一起使用，需要使用 -l 命令。
-icsdr http://www.verydm.com/manhua/yaren http://www.verydm.com/manhua/kuangduzhiyuan
-// or
-// url以半角逗号分隔
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan,http://www.verydm.com/manhua/kuangduzhiyuan
+# 设置下载漫画的范围，可以简写章节名，但必须是目录上章节名的简称
 
-# 自定义分卷
-icsdr -m [comic name] -n [<num> | <xxxp> | <xxxc>]
+// 设置下载的起始章节，不设置结束章节则直至结束
+--start [string]             name of start-chapter
 
-// 基于章节数分卷
-icsdr -m 一拳超人 -n 20c
+// 设置结束章节，不设置起始章节则从头开始下载
+--end [string]               name of end-chapter
 
-// 基于图片数量分卷，并不会严格按照600张图片分割
-icsdr -m 一拳超人 -n 600p
+// 以半角逗号分割起始章节和结束章节
+--range [string]             Separated by commas, such as 10,20
 
-# 指定章节下载
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan --chapter 第19话
+// 指定某一章节下载
+--chapter [string]           download designated chapter
 
-# 设定范围下载，使用章节名（可以简写，但必须是目录上章节名的简称）
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan -S 19话
+// exp
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --start 19
 
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan -S 19话 -E 26话
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --end 第28
 
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan --start 19话 --end 26话
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --start 19 --end 28话
 
-icsdr -l http://www.verydm.com/manhua/kuangduzhiyuan --start 19 --end 26
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --range 19,28
+
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --range 19
+
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --range ,28
+
+icsdr http://www.verydm.com/manhua/kuangduzhiyuan --chapter 28
+
+# 合并分卷
+
+// 指定分卷大小
+--volsize [number | string]  volume number(chapter or picture), such as 200(p) or 20c
+
+// 指定需要合并的漫画
+--merge [filepath]           comic dir path
+
+// 默认基于图片数量合并分卷，并不会严格按章200张合并，同时会弱依赖于章节
+icsdr --merge ./comic/一拳超人 --volsize 200
+
+icsdr --merge ./comic/一拳超人 --volsize 200p
+
+// 基于章节数合并
+icsdr --merge ./comic/一拳超人 --volsize 200c
+
+-h, --help                   output usage information
 ```
-
+以上命令大多可以自由组合使用，若发现必要的组合不生效可异步 [issue] 提出你的bug与需求!
 
 ## License
 
 MIT
+
+[issue]: https://github.com/issaxite/ic-comic-spider/issues
