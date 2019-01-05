@@ -3,7 +3,7 @@ a script to get the comic from xxx
 
 ## 安装
 ```
-npm i -g icsdr
+npm i -g ic-comic-spider
 ```
 
 ## 快速使用
