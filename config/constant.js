@@ -8,5 +8,6 @@ module.exports = {
     outDir: ""
   },
   UNIT_CHAPTER: 'c',
-  UNIT_PICTURE: 'p'
+  UNIT_PICTURE: 'p',
+  TEMP_DIR: 'temp'
 };
