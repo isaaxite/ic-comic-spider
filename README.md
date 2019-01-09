@@ -116,16 +116,6 @@ icsdr --merge ./comic/一拳超人 --volsize 200c
 
 # 分页切割
 
-// 前置工作
-// 使用该功能需要额外安装第三方库（这里指的不是node库，而是系统软件）
-// 可以根据具体系统环境安装 imagemagick 库
-
-// unbuntu
-sudo apt-get install imagemagick
-
-// Mac OS X
-brew install imagemagick
-
 // 居中分割横向长图（主要应用于单行本漫画的双页图片）
 --crop [filepath]            picture filepath, chapter dir or comic dir
 
