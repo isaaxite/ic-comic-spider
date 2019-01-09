@@ -113,6 +113,40 @@ icsdr --merge ./comic/一拳超人 --volsize 200p
 // 基于章节数合并
 icsdr --merge ./comic/一拳超人 --volsize 200c
 
+
+# 分页切割
+
+// 前置工作
+// 使用该功能需要额外安装第三方库（这里指的不是node库，而是系统软件）
+// 可以根据具体系统环境安装 imagemagick 库
+
+// unbuntu
+sudo apt-get install imagemagick
+
+// Mac OS X
+brew install imagemagick
+
+// 居中分割横向长图（主要应用于单行本漫画的双页图片）
+--crop [filepath]            picture filepath, chapter dir or comic dir
+
+// 默认分割后的两张图的命名顺序从右到左，将该属性设置为true则交换顺序
+--swap [boolean]             is need to swap crop order
+
+// 分割整本漫画
+icsdr --crop ./comic/一拳超人 --out ./comic
+
+// 分割单独章节
+icsdr --crop ./comic/一拳超人/第16话/ --out ./comic
+
+// 分割指定图片
+icsdr --crop ./comic/一拳超人/第16话/008.jpg --out ./comic
+
+// 交换分割图片的顺序
+// [left | right]
+// 默认：1.jpg(right) 2.jpg(left)
+// swap: 1.jpg(left) 2.jpg(right)
+icsdr --crop ./comic/一拳超人/第16话/008.jpg --out ./comic --swap true
+
 -h, --help                   output usage information
 ```
 以上命令大多可以自由组合使用，若发现必要的组合不生效可异步 [issue] 提出你的bug与需求!

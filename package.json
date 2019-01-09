@@ -1,6 +1,6 @@
 {
   "name": "ic-comic-spider",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "description": "comic script",
   "main": "index.js",
   "bin": {
@@ -31,6 +31,7 @@
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
+    "gm": "^1.23.1",
     "ora": "^3.0.0"
   }
 }
