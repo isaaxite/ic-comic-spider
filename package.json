@@ -1,6 +1,6 @@
 {
   "name": "ic-comic-spider",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "comic script",
   "main": "index.js",
   "bin": {
@@ -19,7 +19,8 @@
   ],
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "config"
   ],
   "author": "isaac",
   "license": "ISC",
