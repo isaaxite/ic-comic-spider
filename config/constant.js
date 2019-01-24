@@ -1,4 +1,5 @@
 module.exports = {
+  TIME_OUT: 5 * 1000,
   CONFIG: 'config',
   MERGE: 'merge',
   SEARCH: 'search',
