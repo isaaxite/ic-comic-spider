@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-const store = {
+const store: any = {
   defaultConfigPath: path.join(process.cwd(), './config.json'),
   outDir: process.cwd(),
   comicName: '',
@@ -17,7 +17,7 @@ export default {
     }
   },
 
-  set(...rest) {
+  set(...rest: any[]) {
     if (rest.length === 1) {
       const [data] = rest;
       Object.assign(store, data);

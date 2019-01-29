@@ -18,8 +18,7 @@ gulp.task('clean', function(cb) {
 });
 
 gulp.task('typescript', function() {
-  const tsPath = path.join(srctDir, '/**/*.ts');
-  return gulp.src(tsPath)
+  return tsProject.src()
   .pipe(sourcemaps.init({loadMaps: true}))
   .pipe(tsProject())
   .pipe(sourcemaps.write())

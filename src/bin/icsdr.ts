@@ -8,11 +8,13 @@ import * as spider from '../index';
 import * as helper from '../lib/helper';
 import store from '../lib/store';
 import { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } from '../config/constant';
+import icsdr = require('../declare/icsdr');
+import helperDto = require('../declare/helper');
 
-const argvs = process.argv.slice(2);
-const isNormalMode = !(argvs[0] && argvs[0].startsWith('-'));
-const options: any = {};
-const config: any = {};
+const argvs: string[] = process.argv.slice(2);
+const isNormalMode: boolean = !(argvs[0] && argvs[0].startsWith('-'));
+const options = new icsdr.Options();
+const config = new icsdr.Config();
 const invokeStatus: any = {};
 const isReadDefaultConfig = argvs.every((arg) => {
   return !arg.includes('http')
