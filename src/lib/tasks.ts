@@ -11,24 +11,25 @@ import merge from './merge';
 import { CONFIG_TEMPLATE, UNIT_CHAPTER, UNIT_PICTURE } from '../config/constant';
 import crop from './crop';
 import Parser from './parser';
+import icsdr = require('../interface/icsdr');
 
 const self = {
-  async _downloadChapter(comicName, chapterName, chapterUrl) {
+  async _downloadChapter(_comicName: string, _chapterName: string, _chapterUrl: string) {
     const { parser } = store.get();
-    const count = await parser.comicCount(chapterUrl);
+    const count = await parser.comicCount(_chapterUrl);
     const promiseList = [];
     for (let i = 0; i < count; i += 1) {
       const pageNo = i + 1;
-      const imgSrcInfo = await parser.chapterPage(chapterUrl, pageNo, { chapterName });
+      const imgSrcInfo = await parser.chapterPage(_chapterUrl, pageNo, { chapterName: _chapterName });
       if (imgSrcInfo) {
-        const { savePath } = helper.getSavePath(comicName, chapterName, imgSrcInfo.content);
-        const imgStream = await parser.downloadPic(chapterName, imgSrcInfo);
+        const { savePath } = helper.getSavePath(_comicName, _chapterName, imgSrcInfo.content);
+        const imgStream = await parser.downloadPic(_chapterName, imgSrcInfo);
         imgStream && imgStream.pipe(fs.createWriteStream(savePath));
       }
     }
   },
 
-  async _handleDownloadErrors(comicName, downloadErrors) {
+  async _handleDownloadErrors(_comicName: string, _downloadErrors: any) {
     // if (downloadErrors.length) {
     //   await Promise.resolve();
     //   for (const downloadError of downloadErrors) {
@@ -40,27 +41,27 @@ const self = {
     // }
   },
 
-  async _handleParseErrors(comicName, parsedErrors) {
-    if (parsedErrors.length) {
-      for (const parsedError of parsedErrors) {
+  async _handleParseErrors(_comicName: string, _parsedErrors: any[]) {
+    if (_parsedErrors.length) {
+      for (const parsedError of _parsedErrors) {
         const { chapter, url } = parsedError;
-        await this._downloadChapter(comicName, chapter, url);
+        await this._downloadChapter(_comicName, chapter, url);
       }
     }
   }
 };
 
 export default {
-  async parseCatalog(url) {
-    const { domain } = helper.parseCataLogUrl(url);
-    const result = await axios.get(url).then((resp) => {
+  async parseCatalog(_url: string) {
+    const { domain } = helper.parseCataLogUrl(_url);
+    const result = await axios.get(_url).then((resp) => {
       const doc = cheerio.load(resp.data);
       const comicName = doc('.comic-name h1').text();
       const chapterEles = doc('.chapters li > a');
-      const chapterList = helper.mapEles(chapterEles, (ele, index) => {
+      const chapterList = helper.mapEles(chapterEles, (_ele: any, _index: number) => {
         return {
-          title: ele.attr('title'),
-          url: `${domain}/${ele.attr('href')}`
+          title: _ele.attr('title'),
+          url: `${domain}/${_ele.attr('href')}`
         };
       });
       chapterList.reverse();
@@ -73,15 +74,15 @@ export default {
     return result;
   },
   
-  async downloadComic(chapterList, comicName) {
+  async downloadComic(_chapterList: any[], _comicName: string) {
     const imgSrcInfoList = [];
-    for (let i = 0, len = chapterList.length; i < len; i += 1) {
-      const { url: chapterUrl, title: chapterName } = chapterList[i];
-      const { chapterDir } = helper.getSavePath(comicName, chapterName);
+    for (let i = 0, len = _chapterList.length; i < len; i += 1) {
+      const { url: chapterUrl, title: chapterName } = _chapterList[i];
+      const { chapterDir } = helper.getSavePath(_comicName, chapterName);
       const isExistChapter = fs.readdirSync(chapterDir).length;
   
       if (!isExistChapter) {
-        await self._downloadChapter(comicName, chapterName, chapterUrl);
+        await self._downloadChapter(_comicName, chapterName, chapterUrl);
       }
     }
   },
@@ -156,15 +157,15 @@ export default {
     } else {
       // read config file
       const fullPath = path.resolve(process.cwd(), configPath);
-      const userConfig = helper.getConfig(fullPath);
-      const config = {};
+      const userConfig: any = helper.getConfig(fullPath);
+      const config: any = {};
       Object.keys(userConfig).forEach((key) => {
         const item = userConfig[key];
         if (item) {
           config[key] = item;
         }
       });
-      store.set(config);
+      store.set(config as icsdr.Config);
       this.run();
     }
   },
@@ -174,7 +175,7 @@ export default {
     const { cropDir: chapterDirs, outDir, comicName, isSwap } = store.get();
     const spin = ora(`cropping...`).start();
     const saveDir = helper.getDirPath(outDir, `${comicName}_crop`);
-    const comicPromise = chapterDirs.map((chapterDir) => {
+    const comicPromise = chapterDirs.map((chapterDir: string) => {
       const chapterName = path.basename(chapterDir);
       const saveChapterDir = helper.getDirPath(saveDir, chapterName);
       const picNameInfos = helper.getDirContent(chapterDir);
@@ -183,29 +184,33 @@ export default {
         const filePath = path.join(chapterDir, picNameInfo.name);
         const image = sharp(filePath);
         return image.metadata()
-          .then((metadata) => {
-            if (metadata.width > metadata.height) {
-              const cropedPics = crop.init(filePath, { metadata, isSwap });
-              const parseIndex = Number.parseInt(picNameInfo.name);
-              const baseIndex = Number.isNaN(parseIndex) ? 1 : parseIndex;
-              const promises = cropedPics.map((item, index) => {
-                const pointNum = index + 1;
-                const saveName = `${baseIndex}_${pointNum}.${format}`;
-                const savePath = path.join(saveChapterDir, saveName);
-                return item.toFile(savePath);
-              });
-              return Promise.all(promises);
+          .then((metadata: sharp.Metadata) => {
+            if (metadata.width && metadata.height) {
+              if (metadata.width > metadata.height) {
+                const cropedPics = crop.init(filePath, { metadata, isSwap });
+                const parseIndex = Number.parseInt(picNameInfo.name);
+                const baseIndex = Number.isNaN(parseIndex) ? 1 : parseIndex;
+                const promises = cropedPics.map((item, index) => {
+                  const pointNum = index + 1;
+                  const saveName = `${baseIndex}_${pointNum}.${format}`;
+                  const savePath = path.join(saveChapterDir, saveName);
+                  return item.toFile(savePath);
+                });
+                Promise.all(promises);
+              } else {
+                const savePath = path.join(saveChapterDir, `${picNameInfo.name}.${format}`);
+                const data = fs.readFileSync(filePath);
+                fs.writeFileSync(savePath, data);
+                Promise.resolve();
+              }
             } else {
-              const savePath = path.join(saveChapterDir, `${picNameInfo.name}.${format}`);
-              const data = fs.readFileSync(filePath);
-              fs.writeFileSync(savePath, data);
-              return Promise.resolve();
+              Promise.reject();
             }
           });
       });
       return Promise.all(ChapterPromsie).then(() => {
         const picNames = helper.getFilteredDirContent(saveChapterDir);
-        const getFileNameNum = (filename) => {
+        const getFileNameNum = (filename: string) => {
           let temp = filename.split('.')[0];
           temp = temp.replace('_', '.');
           return Number.parseFloat(temp);
@@ -227,11 +232,11 @@ export default {
     });
   },
   
-  async handleErrors(comicName) {
-    const downloadErrors = helper.getDownloadErrors(comicName);
-    const parsedErrors = helper.getParsedErrors(comicName);
-    helper.clearErrors(comicName);
-    await self._handleDownloadErrors(comicName, downloadErrors);
-    await self._handleParseErrors(comicName, parsedErrors);
+  async handleErrors(_comicName: string) {
+    const downloadErrors = helper.getDownloadErrors(_comicName);
+    const parsedErrors = helper.getParsedErrors(_comicName);
+    helper.clearErrors(_comicName);
+    await self._handleDownloadErrors(_comicName, downloadErrors);
+    await self._handleParseErrors(_comicName, parsedErrors);
   }
 };

@@ -4,23 +4,24 @@ import * as ora from 'ora';
 import * as sharp from 'sharp';
 import store from './store';
 import { TEMP_DIR } from '../config/constant';
+import icsdr = require('../declare/icsdr');
 
-export const getConfig = (_filePath) => {
+export const getConfig = (_filePath: string) => {
   const filePath = !_filePath
     ? path.join(process.cwd(), './config.json')
     :  _filePath;
   if (!fs.existsSync(filePath)) {
-    return {};
+    return new icsdr.Config();
   }
-  const config = require(filePath);
+  const config: icsdr.Config = require(filePath);
   return config;
 };
 
-export const warn = (text = '') => {
+export const warn = (text: string = '') => {
   ora(text).warn();
 };
 
-export const succeed = (text = '') => {
+export const succeed = (text: string = '') => {
   ora(text).succeed();
 };
 
@@ -75,7 +76,7 @@ export const getErrorSavedPath = (comicName: string) => {
 };
 
 export const getErrorInfo = (comicName: string) => {
-  let errorLog: object;
+  let errorLog: { [key: string]: any };
   const savedPath = getErrorSavedPath(comicName);
   try {
     errorLog = require(savedPath);
@@ -146,12 +147,12 @@ export const filterDirContent = (list: string[]) => {
   });
 };
 
-export const getFilteredDirContent = (dir) => {
+export const getFilteredDirContent = (dir: string) => {
   const dirContent = fs.readdirSync(dir);
   return filterDirContent(dirContent);
 };
 
-export const sortDirContent = (_vols) => {
+export const sortDirContent = (_vols: string[]) => {
   const vols = filterDirContent(_vols);
   const volInfoList = vols.map((vol) => {
     let numStr = '';
@@ -198,7 +199,7 @@ export const sortChapter = (typingChapter: Array<any[]>) => {
     const temp = vols.map((vol) => {
       let numStr = '';
       let index = baseIndex;
-      const chars = vol.split('');
+      const chars: string[] = vol.split('');
       chars.forEach((char) => {
         if (!Number.isNaN(+char)) {
           numStr += char;
@@ -226,49 +227,49 @@ export const getComicDirContent = (dir: string) => {
   return data;
 };
 
-export const getDirContent = (dir) => {
-  const content = fs.readdirSync(dir);
+export const getDirContent = (_dir: string) => {
+  const content = fs.readdirSync(_dir);
   const sortedContent = sortDirContent(content);
   return sortedContent;
 };
 
-export const getDirPath = (_base, ...rest) => {
+export const getDirPath = (_base: string, ..._rest: string[]) => {
   let base = path.isAbsolute(_base) ? _base : path.resolve(_base);
   if (!fs.existsSync(base)) {
     throw new Error(`no such base dir: ${base}`);
   }
-  rest.forEach((item) => {
+  _rest.forEach((item) => {
     const dir = path.join(base, item);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }
   });
-  return path.join(base, ...rest);
+  return path.join(base, ..._rest);
 }
 
-export const getPicMetadata = (picPath, callback) => {
-  sharp(picPath).metadata()
+export const getPicMetadata = (_picPath: string, _cb: (err: Error | null, metadata?: sharp.Metadata) => void) => {
+  sharp(_picPath).metadata()
     .then((metadata) => {
-      callback(null, metadata);
+      _cb(null, metadata);
     })
     .catch((err) => {
-      callback(err);
+      _cb(err);
     });
 };
 
-export const mkDir = (...rest) => {
-  const dir = path.join(...rest);
+export const mkDir = (..._rest: string[]) => {
+  const dir = path.join(..._rest);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
   }
   return dir;
 };
 
-export const getChapterIndex = (chapterList, title) => {
+export const getChapterIndex = (_chapterList: any[], _title: string) => {
   let activeIndex = -1;
-  for (let index = 0, len = chapterList.length; index < len; index += 1) {
-    const chapter = chapterList[index];
-    if (chapter.title.includes(title)) {
+  for (let index = 0, len = _chapterList.length; index < len; index += 1) {
+    const chapter = _chapterList[index];
+    if (chapter.title.includes(_title)) {
       activeIndex = index;
       break;
     }
@@ -276,21 +277,21 @@ export const getChapterIndex = (chapterList, title) => {
   return activeIndex;
 };
 
-export const clipChapterList = (chapterList) => {
+export const clipChapterList = (_chapterList: any[]) => {
   const { startChapter, endChapter, options } = store.get();
-  const startIndex = getChapterIndex(chapterList, startChapter);
-  const endIndex = getChapterIndex(chapterList, endChapter);
+  const startIndex = getChapterIndex(_chapterList, startChapter);
+  const endIndex = getChapterIndex(_chapterList, endChapter);
   const realStartIndex = startIndex > 0 ? startIndex : 0;
-  let realEndIndex = endIndex > 0 ? endIndex + 1 : chapterList.length;
+  let realEndIndex = endIndex > 0 ? endIndex + 1 : _chapterList.length;
   if (realEndIndex < realStartIndex) {
-    realEndIndex = chapterList.length;
+    realEndIndex = _chapterList.length;
   }
-  return chapterList.slice(realStartIndex, realEndIndex);
+  return _chapterList.slice(realStartIndex, realEndIndex);
 };
 
-export const parseUrl = (_url) => {
+export const parseUrl = (_url: string) => {
   const parts = _url.split(path.sep);
-  const content = parts.pop();
+  const content = parts.pop() || '';
   const prefix = _url.slice(0, _url.length - content.length);
   const [ name, format ] = content.split('.');
   const index = Number.parseInt(name);

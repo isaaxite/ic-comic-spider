@@ -1,26 +1,18 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "allowJs": false,
     "target": "es5",
     "module": "commonjs",
     "strict": true,
-    "noImplicitAny": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "charset": "utf8",
-    "allowJs": false,
     "pretty": true,
-    "noEmitOnError": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": false,
-    "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "sourceMap": true,
     "inlineSourceMap": true,
     "importHelpers": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
     "lib": [
       "es5",
       
@@ -35,5 +27,11 @@
       "es2015.reflect",
       "es2017.typedarrays"
     ]
-  }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/interface/*"
+  ]
 }

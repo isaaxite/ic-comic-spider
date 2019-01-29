@@ -4,17 +4,17 @@ import store from './store';
 import * as helper from './helper';
 
 export default {
-  baseOnPictureCount(volSize) {
+  baseOnPictureCount(_volSize: number) {
     let picCount = 0;
     let picIndex = 1;
     let volIndex = 1;
     const { comicSrc, comicName, outDir } = store.get();
-    const volComicDir = helper.mkDir(outDir, `${comicName}(vol_pre_${volSize}pics)`);
+    const volComicDir = helper.mkDir(outDir, `${comicName}(vol_pre_${_volSize}pics)`);
     const chapters = helper.getComicDirContent(comicSrc);
     chapters.forEach((chapter, chapterIndex) => {
       const chapterDir = path.join(comicSrc, chapter.name);
       const pics = helper.getDirContent(chapterDir);
-      if (picCount > volSize) {
+      if (picCount > _volSize) {
         picIndex = 1;
         volIndex += 1;
         picCount = 0;
@@ -32,17 +32,17 @@ export default {
     });
   },
 
-  baseOnChapterCount(volSize) {
+  baseOnChapterCount(_volSize: number) {
     let picIndex = 1;
     const { comicName, outDir } = store.get();
     const comicDir = helper.mkDir(outDir, comicName);
-    const volComicDir = helper.mkDir(outDir, `${comicName}(vol_pre_${volSize}chapters)`);
+    const volComicDir = helper.mkDir(outDir, `${comicName}(vol_pre_${_volSize}chapters)`);
     const chapters = helper.getComicDirContent(comicDir);
     
     chapters.forEach((chapter, chapterIndex) => {
       const chapterDir = path.join(comicDir, chapter.name);
-      const volIndex = Math.floor(chapterIndex / volSize) + 1;
-      if ( (chapterIndex) % volSize === 0 ) {
+      const volIndex = Math.floor(chapterIndex / _volSize) + 1;
+      if ( (chapterIndex) % _volSize === 0 ) {
         picIndex = 1;
       }
       const pics = helper.getDirContent(chapterDir);
