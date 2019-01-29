@@ -1,9 +1,9 @@
-const url = require('url');
-const axios = require('axios');
-const cheerio = require('cheerio');
-const helper = require('../../helper');
+import * as url from 'url';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import * as helper from '../../helper';
 
-module.exports = {
+export default {
   async catalog(_url) {
     const { protocol, hostname } = url.parse(_url);
     const origin = `${protocol}//${hostname}`;
@@ -67,7 +67,7 @@ module.exports = {
       if (isValid) {
         return Promise.resolve(resp.data);
       } else {
-        helper.setDownloadError(comicName, {
+        helper.setDownloadError({
           chapter: chapterName,
           imgInfo
         });

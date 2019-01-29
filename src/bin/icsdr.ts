@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const program = require('commander');
-const spider = require('../index');
-const helper = require('../lib/helper');
-const store = require('../lib/store');
+import 'ts-polyfill';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as program from 'commander';
+import * as spider from '../index';
+import * as helper from '../lib/helper';
+import store from '../lib/store';
+import { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } from '../config/constant';
+
 const argvs = process.argv.slice(2);
 const isNormalMode = !(argvs[0] && argvs[0].startsWith('-'));
-const { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } = require('../config/constant');
-const options = {};
-const config = {};
-const invokeStatus = {};
+const options: any = {};
+const config: any = {};
+const invokeStatus: any = {};
 const isReadDefaultConfig = argvs.every((arg) => {
   return !arg.includes('http')
     && !arg.includes('catalogs')
@@ -21,7 +23,7 @@ const isReadDefaultConfig = argvs.every((arg) => {
 });
 
 const parseInfo = program
-  .version(require('../package.json').version)
+  .version(require('../../package.json').version)
   .option('--config [filePath]', 'config file path', (configPath) => {
     options.mode = CONFIG;
     config.configPath = configPath;
@@ -80,7 +82,7 @@ const parseInfo = program
       num: realNum,
       unit: realUnit
     };
-    invokeStatus.num = true;
+    invokeStatus.volsize = true;
   })
   .option('--merge [filepath]', 'comic dir path', (comicSrc) => {
     const srcDir = path.join(process.cwd(), comicSrc);
@@ -93,11 +95,11 @@ const parseInfo = program
   .option('--crop [filepath]', 'picture filepath, chapter dir or comic dir', (unknowPath) => {
     let ext;
     let tempPath = '';
-    let tempPathInfo = {};
+    let tempPathInfo: any = {};
     const COMIC_DIR = 2;
     const CHAPTER_DIR = 1;
     const PICTURE_PATH = 0;
-    const dirNames = [];
+    const dirNames: string[] = [];
     const absolutePath = !path.isAbsolute(unknowPath)
         ? path.join(process.cwd(), unknowPath)
         : unknowPath;
@@ -107,7 +109,7 @@ const parseInfo = program
     tempPath = absolutePath;
     while (!ext) {
       let tempName = '';
-      let pathInfo = '';
+      let pathInfo: any;
       tempName = helper.getFilteredDirContent(tempPath)[0];
       tempPath = path.join(absolutePath, tempName);
       pathInfo = path.parse(tempPath);
@@ -162,7 +164,7 @@ const parseInfo = program
 (function __init() {
   const events = parseInfo._events;
   Object.keys(parseInfo._events).forEach((eventName) => {
-    const optionName = eventName.split(':').pop();
+    const optionName = eventName.split(':').pop() || '';
     const isValid = parseInfo[optionName]
       && !['version'].includes(optionName)
       && !invokeStatus[optionName];
