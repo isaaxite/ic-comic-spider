@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const store = require('./store');
-const helper = require('./helper');
+import * as fs from 'fs';
+import * as path from 'path';
+import store from './store';
+import * as helper from './helper';
 
-module.exports = {
+export default {
   baseOnPictureCount(volSize) {
     let picCount = 0;
     let picIndex = 1;

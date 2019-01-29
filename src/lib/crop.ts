@@ -1,11 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const sharp = require('sharp');
-const store = require('./store');
-const helper = require('./helper');
+import * as sharp from 'sharp';
 
-exports = {
-  init(picPath, options = {}) {
+export default {
+  init(picPath: string, options: any = {}) {
     const { metadata, isSwap = true } = options;
     if (!metadata) {
       throw new Error('except picture metadata<{ width: number, height: number }>')
@@ -27,5 +23,3 @@ exports = {
     return cropedPic;
   }
 };
-
-module.exports = exports;

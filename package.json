@@ -1,13 +1,16 @@
 {
   "name": "ic-comic-spider",
-  "version": "2.4.4",
+  "version": "2.5.0",
   "description": "comic script",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "bin": {
-    "icsdr": "./bin/icsdr.js"
+    "icsdr": "./dist/bin/icsdr.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "gulp watch",
+    "dist": "gulp dist",
+    "deps": "npm i && npm i gulp-cli -g"
   },
   "repository": {
     "type": "git",
@@ -18,9 +21,9 @@
     "spider"
   ],
   "files": [
-    "bin",
-    "lib",
-    "config"
+    "dist/bin",
+    "dist/lib",
+    "dist/config"
   ],
   "author": "isaac",
   "license": "ISC",
@@ -30,9 +33,26 @@
   "homepage": "https://github.com/issaxite/comic-spider#readme",
   "dependencies": {
     "axios": "^0.18.0",
+    "babel-polyfill": "^6.26.0",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
     "ora": "^3.0.0",
     "sharp": "^0.21.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@types/cheerio": "^0.22.10",
+    "@types/ora": "^3.0.0",
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-typescript": "^5.0.0",
+    "gulp-uglify": "^3.0.1",
+    "run-sequence": "^2.2.1",
+    "ts-polyfill": "^3.0.1",
+    "tslib": "^1.9.3",
+    "typescript": "^3.2.4"
   }
 }

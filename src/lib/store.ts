@@ -1,4 +1,4 @@
-const path = require('path');
+import * as path from 'path';
 
 const store = {
   defaultConfigPath: path.join(process.cwd(), './config.json'),
@@ -8,8 +8,8 @@ const store = {
   options: {}
 };
 
-module.exports = {
-  get(key) {
+export default {
+  get(key?: string) {
     if (key) {
       return store[key];
     } else {

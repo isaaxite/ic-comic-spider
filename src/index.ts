@@ -1,8 +1,8 @@
-const store = require('./lib/store');
-const tasks = require('./lib/tasks');
-const { CROP, CONFIG, SEARCH, MERGE } = require('./config/constant');
+import store from './lib/store';
+import tasks from './lib/tasks';
+import { CROP, CONFIG, SEARCH, MERGE } from './config/constant';
 
-exports.init = (options, config) => {
+export const init = (options, config) => {
   store.set({ options, ...config });
   switch (options.mode) {
     case CROP:
