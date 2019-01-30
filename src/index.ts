@@ -1,7 +1,7 @@
 import store from './lib/store';
 import tasks from './lib/tasks';
 import { CROP, CONFIG, SEARCH, MERGE } from './config/constant';
-import icsdr = require('./interface/icsdr');
+import icsdr = require('./declare/icsdr');
 
 export const init = (options: icsdr.Options, config: icsdr.Config) => {
   store.set({ options, ...config });

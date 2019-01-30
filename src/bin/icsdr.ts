@@ -9,8 +9,8 @@ import * as helper from '../lib/helper';
 import store from '../lib/store';
 import { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } from '../config/constant';
 import icsdr = require('../declare/icsdr');
-import helperDto = require('../declare/helper');
 
+const packageInfo = require('../../package.json');
 const argvs: string[] = process.argv.slice(2);
 const isNormalMode: boolean = !(argvs[0] && argvs[0].startsWith('-'));
 const options = new icsdr.Options();
@@ -25,7 +25,7 @@ const isReadDefaultConfig = argvs.every((arg) => {
 });
 
 const parseInfo = program
-  .version(require('../../package.json').version)
+  .version(packageInfo.version)
   .option('--config [filePath]', 'config file path', (configPath) => {
     options.mode = CONFIG;
     config.configPath = configPath;

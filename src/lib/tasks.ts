@@ -10,8 +10,8 @@ import store from './store';
 import merge from './merge';
 import { CONFIG_TEMPLATE, UNIT_CHAPTER, UNIT_PICTURE } from '../config/constant';
 import crop from './crop';
-import Parser from './parser';
-import icsdr = require('../interface/icsdr');
+import Parser from './parser/index';
+import icsdr = require('../declare/icsdr');
 
 const self = {
   async _downloadChapter(_comicName: string, _chapterName: string, _chapterUrl: string) {
@@ -29,12 +29,12 @@ const self = {
     }
   },
 
-  async _handleDownloadErrors(_comicName: string, _downloadErrors: any) {
-    // if (downloadErrors.length) {
+  async _handleDownloadErrors(_comicName: string, _downloadErrors: any[]) {
+    // if (_downloadErrors.length) {
     //   await Promise.resolve();
-    //   for (const downloadError of downloadErrors) {
+    //   for (const downloadError of _downloadErrors) {
     //     const { chapter: chapterName, imgInfo } = downloadError;
-    //     const { savePath } = helper.getSavePath(comicName, chapterName, imgInfo.content);
+    //     const { savePath } = helper.getSavePath(_comicName, chapterName, imgInfo.content);
     //     const imgStream = await self._downloadPic(imgInfo);
     //     imgStream && imgStream.pipe(fs.createWriteStream(savePath));
     //   }
@@ -94,7 +94,7 @@ export default {
       process.exit();
     }
     for (const catalogUrl of catalogUrlList) {
-      const parser = Parser.init(catalogUrl);
+      const parser = new Parser(catalogUrl);
       store.set({ parser });
       const { enName } = helper.parseCataLogUrl(catalogUrl);
       const spin = ora(`[${enName}] download...`).start();
@@ -171,7 +171,6 @@ export default {
   },
   
   async crop() {
-    let baseNum = 0;
     const { cropDir: chapterDirs, outDir, comicName, isSwap } = store.get();
     const spin = ora(`cropping...`).start();
     const saveDir = helper.getDirPath(outDir, `${comicName}_crop`);
@@ -233,10 +232,10 @@ export default {
   },
   
   async handleErrors(_comicName: string) {
-    const downloadErrors = helper.getDownloadErrors(_comicName);
-    const parsedErrors = helper.getParsedErrors(_comicName);
-    helper.clearErrors(_comicName);
-    await self._handleDownloadErrors(_comicName, downloadErrors);
-    await self._handleParseErrors(_comicName, parsedErrors);
+    // const downloadErrors = helper.getDownloadErrors(_comicName);
+    // const parsedErrors = helper.getParsedErrors(_comicName);
+    // helper.clearErrors(_comicName);
+    // await self._handleDownloadErrors(_comicName, downloadErrors);
+    // await self._handleParseErrors(_comicName, parsedErrors);
   }
 };
