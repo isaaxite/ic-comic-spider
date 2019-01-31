@@ -2,8 +2,8 @@ import * as url from 'url';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as helper from '../../helper';
-import { errorHandler } from '../../error';
 import { ERROR_TYPES } from '../../../config/constant';
+import ErrorHandler from '../../error';
 import parserDto = require('../../../declare/parser');
 
 export default class Verydm implements parserDto.BaseParser {
@@ -69,7 +69,8 @@ export default class Verydm implements parserDto.BaseParser {
         return Promise.resolve(imgInfo);
       })
       .catch(() => {
-        errorHandler.setSpeError(ERROR_TYPES.parse, {
+        const errorHandler = ErrorHandler.init();
+        errorHandler.setParsedError({
           chapter: _options.chapterName,
           url: _url
         })
@@ -90,8 +91,9 @@ export default class Verydm implements parserDto.BaseParser {
       headers: { 'Referer': _imgInfo.referer },
       url: _imgInfo.url,
     };
-    const setError = (chapter: string, imgInfo: any) => {
-      errorHandler.setSpeError(ERROR_TYPES.download, {
+    const setError = (chapter: string, imgInfo: parserDto.ImgInfo) => {
+      const errorHandler = ErrorHandler.init();
+      errorHandler.setDownloadError({
         chapter,
         imgInfo
       });

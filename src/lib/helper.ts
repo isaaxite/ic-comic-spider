@@ -11,7 +11,7 @@ export const getConfig = (_filePath: string) => {
     ? path.join(process.cwd(), './config.json')
     :  _filePath;
   if (!fs.existsSync(filePath)) {
-    return new icsdr.Config();
+    return {};
   }
   const config: icsdr.Config = require(filePath);
   return config;

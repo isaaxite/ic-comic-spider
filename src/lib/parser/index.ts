@@ -4,7 +4,7 @@ import parserDto = require('../../declare/parser');
 import { HOST_NAME } from '../../config/constant';
 
 export default class Parser implements parserDto.BaseParser {
-  private baseParser: Verydm;
+  private baseParser: parserDto.BaseParser;
 
   constructor(_url: string) {
     const { hostname } = url.parse(_url);
