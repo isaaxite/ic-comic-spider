@@ -5,6 +5,8 @@ import { ERROR_TYPES } from '../config/constant';
 import Parser from './parser/index';
 import errorHandler = require('../declare/errorHandler');
 import parserDto = require('../declare/parser');
+import tasks from './tasks';
+import Tasks from './tasks';
 
 export default class ErrorHandler {
   static instance: ErrorHandler;
@@ -33,7 +35,7 @@ export default class ErrorHandler {
    * @param { string | undefined } _comicName 漫画名
    * @param { errorHandler.Options | undefined } _options 可选
    */
-  static init(_comicName?: string, _options?: errorHandler.Options) {
+  static getIns(_comicName?: string, _options?: errorHandler.Options) {
     if (!ErrorHandler.instance) {
       ErrorHandler.instance = new ErrorHandler(_comicName, _options);
     }
@@ -130,7 +132,16 @@ export default class ErrorHandler {
     }
 
     if (parsedErrors) {
-      console.log(2, parsedErrors);
+      const tasks = new Tasks();
+      const parser = store.get('parser');
+      if (!parser) {
+        const newParser = new Parser(parsedErrors[0].url);
+        store.set({ parser: newParser });
+      }
+      for (const error of parsedErrors) {
+        const { chapter, url } = error;
+        await tasks.downloadChapter(comicName, chapter, url);
+      }
     }
   }
 

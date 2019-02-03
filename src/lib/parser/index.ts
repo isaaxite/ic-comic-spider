@@ -17,6 +17,11 @@ export default class Parser implements parserDto.BaseParser {
     }
   }
 
+  
+  public async comicCount(_url: string) {
+    return this.baseParser.comicCount(_url);
+  }
+
   /**
    * 解析漫画目录
    * @param { string } _url 漫画目录的链接

@@ -12,9 +12,14 @@ import { CONFIG_TEMPLATE, UNIT_CHAPTER, UNIT_PICTURE } from '../config/constant'
 import crop from './crop';
 import Parser from './parser/index';
 import icsdr = require('../declare/icsdr');
+import ErrorHandler from './error';
 
-const self = {
-  async _downloadChapter(_comicName: string, _chapterName: string, _chapterUrl: string) {
+export default class Tasks {
+  constructor() {
+
+  }
+  
+  public async downloadChapter(_comicName: string, _chapterName: string, _chapterUrl: string) {
     const { parser } = store.get();
     const count = await parser.comicCount(_chapterUrl);
     const promiseList = [];
@@ -27,54 +32,9 @@ const self = {
         imgStream && imgStream.pipe(fs.createWriteStream(savePath));
       }
     }
-  },
-
-  async _handleDownloadErrors(_comicName: string, _downloadErrors: any[]) {
-    // if (_downloadErrors.length) {
-    //   await Promise.resolve();
-    //   for (const downloadError of _downloadErrors) {
-    //     const { chapter: chapterName, imgInfo } = downloadError;
-    //     const { savePath } = helper.getSavePath(_comicName, chapterName, imgInfo.content);
-    //     const imgStream = await self._downloadPic(imgInfo);
-    //     imgStream && imgStream.pipe(fs.createWriteStream(savePath));
-    //   }
-    // }
-  },
-
-  async _handleParseErrors(_comicName: string, _parsedErrors: any[]) {
-    if (_parsedErrors.length) {
-      for (const parsedError of _parsedErrors) {
-        const { chapter, url } = parsedError;
-        await this._downloadChapter(_comicName, chapter, url);
-      }
-    }
   }
-};
-
-export default {
-  async parseCatalog(_url: string) {
-    const { domain } = helper.parseCataLogUrl(_url);
-    const result = await axios.get(_url).then((resp) => {
-      const doc = cheerio.load(resp.data);
-      const comicName = doc('.comic-name h1').text();
-      const chapterEles = doc('.chapters li > a');
-      const chapterList = helper.mapEles(chapterEles, (_ele: any, _index: number) => {
-        return {
-          title: _ele.attr('title'),
-          url: `${domain}/${_ele.attr('href')}`
-        };
-      });
-      chapterList.reverse();
-      return Promise.resolve({
-        comicName,
-        chapterList
-      });
-    });
   
-    return result;
-  },
-  
-  async downloadComic(_chapterList: any[], _comicName: string) {
+  public async downloadComic(_chapterList: any[], _comicName: string) {
     const imgSrcInfoList = [];
     for (let i = 0, len = _chapterList.length; i < len; i += 1) {
       const { url: chapterUrl, title: chapterName } = _chapterList[i];
@@ -82,12 +42,12 @@ export default {
       const isExistChapter = fs.readdirSync(chapterDir).length;
   
       if (!isExistChapter) {
-        await self._downloadChapter(_comicName, chapterName, chapterUrl);
+        await this.downloadChapter(_comicName, chapterName, chapterUrl);
       }
     }
-  },
+  }
   
-  async run() {
+  public async run() {
     const { catalogs: catalogUrlList } = store.get();
     if (!catalogUrlList || !catalogUrlList.length) {
       helper.warn('please config the catalogs');
@@ -101,12 +61,13 @@ export default {
       const { chapterList, comicName } = await parser.catalog(catalogUrl);
       const realChapterList = helper.clipChapterList(chapterList);
       await this.downloadComic(realChapterList, comicName);
-      await this.handleErrors(comicName);
+      const errorHandler = ErrorHandler.getIns();
+      errorHandler.handleErrors();
       spin.succeed(`[${enName}] finish!`);
     }
-  },
+  }
   
-  async search() {
+  public async search() {
     let searchList: any[] = [];
     const { keyword } = store.get();
     const parserDirPath = path.join(__dirname, './parser');
@@ -127,9 +88,9 @@ export default {
         return `${item.name}: ${item.src}`;
       })
     ].join('\n'));
-  },
+  }
   
-  merge() {
+  public merge() {
     const { volSize, comicName } = store.get();
     const { unit, num } = volSize;
     const spin = ora(`merging ${comicName}...`).start();
@@ -144,9 +105,9 @@ export default {
         helper.warn('wrong operation');
     }
     spin.succeed('finish');
-  },
+  }
   
-  config() {
+  public config() {
     const { configPath, defaultConfigPath } = store.get();
     if (!configPath || !fs.existsSync(configPath)) {
       // init config file
@@ -168,9 +129,9 @@ export default {
       store.set(config as icsdr.Config);
       this.run();
     }
-  },
+  }
   
-  async crop() {
+  public async crop() {
     const { cropDir: chapterDirs, outDir, comicName, isSwap } = store.get();
     const spin = ora(`cropping...`).start();
     const saveDir = helper.getDirPath(outDir, `${comicName}_crop`);
@@ -229,13 +190,5 @@ export default {
     Promise.all(comicPromise).then(() => {
       spin.succeed('finish!');
     });
-  },
-  
-  async handleErrors(_comicName: string) {
-    // const downloadErrors = helper.getDownloadErrors(_comicName);
-    // const parsedErrors = helper.getParsedErrors(_comicName);
-    // helper.clearErrors(_comicName);
-    // await self._handleDownloadErrors(_comicName, downloadErrors);
-    // await self._handleParseErrors(_comicName, parsedErrors);
   }
-};
+}

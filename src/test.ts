@@ -25,6 +25,7 @@ const errorHandler = new ErrorHandler('tempComic', { outDir: path.join(process.c
   //   chapter: '第538话',
   //   url: 'http://www.verydm.com/chapter.php?id=18988&p=4'
   // });
+
   const temp = await errorHandler.handleErrors();
-  console.log(temp);
+  // console.log(temp);
 })();

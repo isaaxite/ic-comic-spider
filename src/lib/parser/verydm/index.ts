@@ -69,7 +69,7 @@ export default class Verydm implements parserDto.BaseParser {
         return Promise.resolve(imgInfo);
       })
       .catch(() => {
-        const errorHandler = ErrorHandler.init();
+        const errorHandler = ErrorHandler.getIns();
         errorHandler.setParsedError({
           chapter: _options.chapterName,
           url: _url
@@ -92,7 +92,7 @@ export default class Verydm implements parserDto.BaseParser {
       url: _imgInfo.url,
     };
     const setError = (chapter: string, imgInfo: parserDto.ImgInfo) => {
-      const errorHandler = ErrorHandler.init();
+      const errorHandler = ErrorHandler.getIns();
       errorHandler.setDownloadError({
         chapter,
         imgInfo
