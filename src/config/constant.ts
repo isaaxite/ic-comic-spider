@@ -25,3 +25,5 @@ export const ERROR_TYPES = {
 export const HOST_NAME = {
   verydm: 'www.verydm.com'
 };
+
+export const TIME_OUT = 5 * 1000;

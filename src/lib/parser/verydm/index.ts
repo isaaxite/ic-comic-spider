@@ -2,9 +2,11 @@ import * as url from 'url';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as helper from '../../helper';
-import { ERROR_TYPES } from '../../../config/constant';
+import { ERROR_TYPES, TIME_OUT } from '../../../config/constant';
 import ErrorHandler from '../../error';
 import parserDto = require('../../../declare/parser');
+import store from '../../store';
+import Spinner from '../../spinner';
 
 export default class Verydm implements parserDto.BaseParser {
   constructor() {}
@@ -38,43 +40,68 @@ export default class Verydm implements parserDto.BaseParser {
     return promise;
   }
 
-  public async comicCount(_url: string) {
-    const count = await axios.get(_url).then((resp) => {
-      const doc = cheerio.load(resp.data);
-      const count = doc('select > option').length;
-      return Promise.resolve(count);
-    }, (error) => {
-      console.error(error);
-    });
-    return count;
-  }
-
   /**
    * 解析章节某一页漫画的图片信息
    * @param { string } _url 章节中的某一页漫画的page url
-   * @param { number } _pageNo 页码
    * @param { any } _options 可选
    */
-  public async chapterPage(_url: string, _pageNo: number, _options: any) {
-    const referer: string = `${_url}&p=${_pageNo}`;
-    const promise = axios.get(referer)
-      .then((resp) => {
-        const doc = cheerio.load(resp.data);
-        const imgSrc = doc('#mainImage2').attr('src');
-        const parsedUrl = helper.parseUrl(imgSrc);
-        const imgInfo: parserDto.ImgInfo = {
-          referer,
-          ...parsedUrl
-        };
-        return Promise.resolve(imgInfo);
-      })
-      .catch(() => {
-        const errorHandler = ErrorHandler.getIns();
-        errorHandler.setParsedError({
-          chapter: _options.chapterName,
-          url: _url
-        })
+  public async chapterPage(_url: string, _options: any) {
+    const { protocol, hostname } = url.parse(_url);
+    const origin = `${protocol}//${hostname}`;
+    const CancelToken = axios.CancelToken;
+    const source = CancelToken.source();
+    const reqOptions = {
+      method: 'GET',
+      url: _url,
+      timeout: TIME_OUT,
+      cancelToken: source.token
+    };
+    const setError = () => {
+      const errorHandler = ErrorHandler.getIns();
+      errorHandler.setParsedError({
+        chapter: _options.chapterName,
+        url: _url
       });
+    };
+    // 无响应处理
+    const noRespHandler = setTimeout(() => {
+      const spinner = Spinner.getIns();
+      source.cancel();
+      spinner.warn(`no response: ${_url}`);
+      setError();
+    }, TIME_OUT + 2 * 1000);
+    const promise: Promise<parserDto.ImgInfo | undefined> = axios.request(reqOptions).then((resp) => {
+      const doc = cheerio.load(resp.data);
+      const nextPage = resp.data.match(/<a href="(.*)">下一页(?:<\/a>)?/)[1];
+      const isLast = nextPage.includes('已经是最后一页了');
+      const imgSrc = doc('#mainImage2').attr('src');
+      const parsedUrl = helper.parseUrl(imgSrc);
+      const imgInfo: parserDto.ImgInfo = {
+        isLast,
+        referer: _url,
+        next: url.resolve(origin, nextPage),
+        ...parsedUrl
+      };
+      return Promise.resolve(imgInfo);
+    }).catch(async (error) => {
+      const errMsg = error.message || '';
+      const isTimeout = errMsg.includes('timeout');
+      const spinner = Spinner.getIns();
+
+      if (axios.isCancel(error)) {
+        return ;
+      }
+
+      if (isTimeout) {
+        spinner.warn(`parse overtime reconnection: [${_options.chapterName}]${_url}`);
+        return this.chapterPage(_url, _options);
+      } else {
+        spinner.warn(`parse fail: ${_url}`);
+        setError();
+      }
+    }).finally(() => {
+      clearTimeout(noRespHandler);
+    });
 
     return promise;
   }
@@ -90,6 +117,7 @@ export default class Verydm implements parserDto.BaseParser {
       responseType:'stream',
       headers: { 'Referer': _imgInfo.referer },
       url: _imgInfo.url,
+      timeout: TIME_OUT,
     };
     const setError = (chapter: string, imgInfo: parserDto.ImgInfo) => {
       const errorHandler = ErrorHandler.getIns();
@@ -98,17 +126,33 @@ export default class Verydm implements parserDto.BaseParser {
         imgInfo
       });
     };
-    const promise = axios(options)
+    const promise: Promise<any> = axios(options)
       .then((resp) => {
         const isValid = resp.statusText === 'OK';
         if (isValid) {
           return Promise.resolve(resp.data);
         } else {
+          const spinner = Spinner.getIns();
+          spinner.warn(`download fail: ${_imgInfo.url}`);
           setError(_chapterName, _imgInfo);
         }
       })
-      .catch(() => {
-        setError(_chapterName, _imgInfo);
+      .catch(async (error) => {
+        const errMsg = error.message || '';
+        const isTimeout = errMsg.includes('timeout');
+        const spinner = Spinner.getIns();
+
+        if (axios.isCancel(error)) {
+          return ;
+        } 
+
+        if (isTimeout) {
+          spinner.warn(`download overtime reconnection: ${_imgInfo.url}`);
+          return this.downloadPic(_chapterName, _imgInfo);
+        } else {
+          spinner.warn(`download fail: ${_imgInfo.url}`);
+          setError(_chapterName, _imgInfo);
+        }
       });
 
     return promise;

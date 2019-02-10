@@ -7,6 +7,7 @@ import errorHandler = require('../declare/errorHandler');
 import parserDto = require('../declare/parser');
 import tasks from './tasks';
 import Tasks from './tasks';
+import Spinner from './spinner';
 
 export default class ErrorHandler {
   static instance: ErrorHandler;
@@ -63,7 +64,9 @@ export default class ErrorHandler {
    */
   public getErrorInfo() {
     let errorLog: errorHandler.ErrorInfo = {};
-    const errorPath: string = this.getSavePath();
+    const { outDir } = store.get();
+    const relativedPath: string = this.getSavePath();
+    const errorPath = path.resolve(relativedPath);
     if (fs.existsSync(errorPath)) {
       try {
         errorLog = require(errorPath) || {};
@@ -111,6 +114,9 @@ export default class ErrorHandler {
     }
   }
 
+  /**
+   * 处理下载和解析的错误
+   */
   public async handleErrors() {
     const { comicName, outDir } = this;
     const errorInfo = this.getErrorInfo();
@@ -121,14 +127,24 @@ export default class ErrorHandler {
     if (!downloadErrors && !parsedErrors) {
       return ;
     }
+    const spinner = Spinner.getIns();
+    spinner.info('start handle errors');
+    this.clearErrors();
+
     if (downloadErrors) {
-      for (const error of downloadErrors) {
-        const { chapter, imgInfo } = error;
-        const savePath = path.join(comicDir, chapter, `${imgInfo.index}.${imgInfo.format}`);
-        const parser = this.getParserIns(imgInfo.url);
-        const imgStream = await parser.downloadPic(chapter, imgInfo);
-        imgStream && imgStream.pipe(fs.createWriteStream(savePath));
-      }
+      const errorHandler = ErrorHandler.getIns();
+      const savedPath: string = this.getSavePath();
+      fs.writeFileSync(savedPath, JSON.stringify({
+        [ERROR_TYPES.download]: downloadErrors
+      }, null, 2));
+      /* 暂不处理 download error（因暂无法区分坏资源与可避免的下载错误） */
+      // for (const error of downloadErrors) {
+      //   const { chapter, imgInfo } = error;
+      //   const savePath = path.join(comicDir, chapter, `${imgInfo.index}.${imgInfo.format}`);
+      //   const parser = this.getParserIns(imgInfo.url);
+      //   const imgStream = await parser.downloadPic(chapter, imgInfo);
+      //   imgStream && imgStream.pipe(fs.createWriteStream(savePath));
+      // }
     }
 
     if (parsedErrors) {
@@ -140,7 +156,9 @@ export default class ErrorHandler {
       }
       for (const error of parsedErrors) {
         const { chapter, url } = error;
-        await tasks.downloadChapter(comicName, chapter, url);
+        await tasks.downloadChapter(comicName, chapter, url, {
+          handleError: true
+        });
       }
     }
   }

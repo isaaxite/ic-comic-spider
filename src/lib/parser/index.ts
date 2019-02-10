@@ -17,11 +17,6 @@ export default class Parser implements parserDto.BaseParser {
     }
   }
 
-  
-  public async comicCount(_url: string) {
-    return this.baseParser.comicCount(_url);
-  }
-
   /**
    * 解析漫画目录
    * @param { string } _url 漫画目录的链接
@@ -36,8 +31,8 @@ export default class Parser implements parserDto.BaseParser {
    * @param { number } _pageNo 页码
    * @param { any } _options 可选
    */
-  public async chapterPage(_url: string, _pageNo: number, _options: any) {
-    return this.baseParser.chapterPage(_url, _pageNo, _options);
+  public async chapterPage(_url: string, _options: any) {
+    return this.baseParser.chapterPage(_url, _options);
   }
 
   /**

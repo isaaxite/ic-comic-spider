@@ -16,6 +16,8 @@ declare namespace parserDto {
 
     referer: string;
 
+    next: string;
+
     [key: string]: any;
   }
 
@@ -50,7 +52,7 @@ declare namespace parserDto {
      * @param { number } _pageNo 页码
      * @param { any } _options 可选
      */
-    chapterPage(_url: string, _pageNo: number, _options: any): Promise<void | parserDto.ImgInfo>;
+    chapterPage(_url: string, _options: any): Promise<void | parserDto.ImgInfo>;
 
     /**
      * 下载漫画图片

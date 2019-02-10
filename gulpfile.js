@@ -6,6 +6,7 @@ const uglify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
 const del = require('del');
 const ts = require('gulp-typescript');
+const concat = require('gulp-concat');
 const tsProject = ts.createProject("tsconfig.json");
 const srctDir = path.resolve(__dirname, 'src');
 const distDir = path.resolve(__dirname, 'dist');
@@ -41,6 +42,7 @@ gulp.task('copy', function() {
 gulp.task('uglify', function() {
   const jsPath = path.join(distDir, '/**/*.js');
   return gulp.src(jsPath)
+  // .pipe(concat('main.js'))
   .pipe(uglify())
   .pipe(gulp.dest(distDir));
 });
