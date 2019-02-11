@@ -26,4 +26,4 @@ export const HOST_NAME = {
   verydm: 'www.verydm.com'
 };
 
-export const TIME_OUT = 5 * 1000;
+export const TIME_OUT = 7 * 1000;

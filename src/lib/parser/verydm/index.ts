@@ -65,9 +65,8 @@ export default class Verydm implements parserDto.BaseParser {
     };
     // 无响应处理
     const noRespHandler = setTimeout(() => {
-      const spinner = Spinner.getIns();
       source.cancel();
-      spinner.warn(`no response: ${_url}`);
+      Spinner.invoke('warn', `no response: ${_url}`);
       setError();
     }, TIME_OUT + 2 * 1000);
     const promise: Promise<parserDto.ImgInfo | undefined> = axios.request(reqOptions).then((resp) => {
@@ -86,17 +85,16 @@ export default class Verydm implements parserDto.BaseParser {
     }).catch(async (error) => {
       const errMsg = error.message || '';
       const isTimeout = errMsg.includes('timeout');
-      const spinner = Spinner.getIns();
 
       if (axios.isCancel(error)) {
         return ;
       }
 
       if (isTimeout) {
-        spinner.warn(`parse overtime reconnection: [${_options.chapterName}]${_url}`);
+        // Spinner.invoke('info', `parse overtime reconnection: [${_options.chapterName}]${_url}`);
         return this.chapterPage(_url, _options);
       } else {
-        spinner.warn(`parse fail: ${_url}`);
+        Spinner.invoke('warn', `parse fail: [${_options.chapterName}]${_url}`);
         setError();
       }
     }).finally(() => {
@@ -132,25 +130,23 @@ export default class Verydm implements parserDto.BaseParser {
         if (isValid) {
           return Promise.resolve(resp.data);
         } else {
-          const spinner = Spinner.getIns();
-          spinner.warn(`download fail: ${_imgInfo.url}`);
+          Spinner.invoke('warn', `download fail: ${_imgInfo.url}`);
           setError(_chapterName, _imgInfo);
         }
       })
       .catch(async (error) => {
         const errMsg = error.message || '';
         const isTimeout = errMsg.includes('timeout');
-        const spinner = Spinner.getIns();
 
         if (axios.isCancel(error)) {
           return ;
         } 
 
         if (isTimeout) {
-          spinner.warn(`download overtime reconnection: ${_imgInfo.url}`);
+          // Spinner.invoke('info', `download overtime reconnection: ${_imgInfo.url}`);
           return this.downloadPic(_chapterName, _imgInfo);
         } else {
-          spinner.warn(`download fail: ${_imgInfo.url}`);
+          Spinner.invoke('warn', `download fail: ${_imgInfo.url}`);
           setError(_chapterName, _imgInfo);
         }
       });
