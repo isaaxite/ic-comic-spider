@@ -9,13 +9,15 @@ import * as helper from '../lib/helper';
 import store from '../lib/store';
 import { CROP, CONFIG, SEARCH, MERGE, UNIT_CHAPTER, UNIT_PICTURE, TEMP_DIR } from '../config/constant';
 import icsdr = require('../declare/icsdr');
-import helperDto = require('../declare/helper');
+import Spinner from '../lib/spinner';
 
+const packageInfo = require('../../package.json');
 const argvs: string[] = process.argv.slice(2);
 const isNormalMode: boolean = !(argvs[0] && argvs[0].startsWith('-'));
-const options = new icsdr.Options();
-const config = new icsdr.Config();
+const options: icsdr.Options = { mode: '' };
+const config: icsdr.Config = { configPath: '' };
 const invokeStatus: any = {};
+const spinner = Spinner.getIns();
 const isReadDefaultConfig = argvs.every((arg) => {
   return !arg.includes('http')
     && !arg.includes('catalogs')
@@ -25,7 +27,7 @@ const isReadDefaultConfig = argvs.every((arg) => {
 });
 
 const parseInfo = program
-  .version(require('../../package.json').version)
+  .version(packageInfo.version)
   .option('--config [filePath]', 'config file path', (configPath) => {
     options.mode = CONFIG;
     config.configPath = configPath;
@@ -33,7 +35,7 @@ const parseInfo = program
   })
   .option('--out [filePath]', 'file path of save dir', (outDir) => {
     if (!fs.existsSync(outDir)) {
-      helper.warn('no such dir');
+      spinner.warn('no such dir');
       process.exit();
     }
     config.outDir = outDir;
@@ -77,7 +79,7 @@ const parseInfo = program
     const realNum = Number.parseInt(num);
     const realUnit = [UNIT_PICTURE, UNIT_CHAPTER].includes(unit) ? unit : UNIT_PICTURE;
     if (Number.isNaN(realNum)) {
-      helper.warn('That is a wrong volume size');
+      spinner.warn('That is a wrong volume size');
       process.exit();
     }
     config.volSize = {
@@ -149,7 +151,7 @@ const parseInfo = program
         break;
 
       default:
-        helper.warn('wrong path');
+        spinner.warn('wrong path');
         process.exit();
     }
     options.mode = CROP;

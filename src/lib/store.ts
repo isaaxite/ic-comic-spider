@@ -4,7 +4,10 @@ const store: any = {
   defaultConfigPath: path.join(process.cwd(), './config.json'),
   outDir: process.cwd(),
   comicName: '',
-  volNum: 200,
+  volSize: {
+    unit: 'p',
+    num: 200
+  },
   options: {}
 };
 

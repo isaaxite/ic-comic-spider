@@ -30,8 +30,5 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/interface/*"
   ]
 }
