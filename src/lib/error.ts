@@ -127,8 +127,7 @@ export default class ErrorHandler {
     if (!downloadErrors && !parsedErrors) {
       return ;
     }
-    const spinner = Spinner.getIns();
-    spinner.info('start handle errors');
+    Spinner.invoke('start', 'handle errors...');
     this.clearErrors();
 
     if (downloadErrors) {

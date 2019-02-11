@@ -25,9 +25,9 @@ export default class Tasks {
     });
     if (imgSrcInfo) {
       const { savePath } = helper.getSavePath(_comicName, _chapterName, imgSrcInfo.content);
-      if (_options && _options.handleError) {
-        console.log(savePath);
-      }
+      // if (_options && _options.handleError) {
+      //   console.log(savePath);
+      // }
       const imgStream = await parser.downloadPic(_chapterName, imgSrcInfo);
       imgStream && imgStream.pipe(fs.createWriteStream(savePath));
 
@@ -54,10 +54,9 @@ export default class Tasks {
   }
   
   public async run() {
-    const spinner = Spinner.getIns();
     const { catalogs: catalogUrlList } = store.get();
     if (!catalogUrlList || !catalogUrlList.length) {
-      spinner.warn('please config the catalogs');
+      Spinner.invoke('warn', 'please config the catalogs');
       process.exit();
     }
     for (const catalogUrl of catalogUrlList) {
@@ -65,7 +64,7 @@ export default class Tasks {
       store.set({ parser });
 
       const { enName } = helper.parseCataLogUrl(catalogUrl);
-      // spinner.start(`[${enName}] download...`);
+      Spinner.invoke('start', `[${enName}] download...`);
 
       const { chapterList, comicName } = await parser.catalog(catalogUrl);
 
@@ -75,8 +74,8 @@ export default class Tasks {
       await this.downloadComic(realChapterList, comicName);
       const errorHandler = ErrorHandler.getIns();
       await errorHandler.handleErrors();
-      spinner.succeed(`[${enName}] finish!`);
-      process.exit();
+      Spinner.invoke('succeed', `[${enName}] finish!`);
+      // process.exit();
     }
   }
   

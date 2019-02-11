@@ -17,7 +17,6 @@ const isNormalMode: boolean = !(argvs[0] && argvs[0].startsWith('-'));
 const options: icsdr.Options = { mode: '' };
 const config: icsdr.Config = { configPath: '' };
 const invokeStatus: any = {};
-const spinner = Spinner.getIns();
 const isReadDefaultConfig = argvs.every((arg) => {
   return !arg.includes('http')
     && !arg.includes('catalogs')
@@ -35,7 +34,7 @@ const parseInfo = program
   })
   .option('--out [filePath]', 'file path of save dir', (outDir) => {
     if (!fs.existsSync(outDir)) {
-      spinner.warn('no such dir');
+      Spinner.invoke('warn', 'no such dir');
       process.exit();
     }
     config.outDir = outDir;
@@ -79,7 +78,7 @@ const parseInfo = program
     const realNum = Number.parseInt(num);
     const realUnit = [UNIT_PICTURE, UNIT_CHAPTER].includes(unit) ? unit : UNIT_PICTURE;
     if (Number.isNaN(realNum)) {
-      spinner.warn('That is a wrong volume size');
+      Spinner.invoke('warn', 'That is a wrong volume size');
       process.exit();
     }
     config.volSize = {
@@ -151,7 +150,7 @@ const parseInfo = program
         break;
 
       default:
-        spinner.warn('wrong path');
+        Spinner.invoke('warn', 'wrong path');
         process.exit();
     }
     options.mode = CROP;
