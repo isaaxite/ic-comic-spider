@@ -52,7 +52,7 @@ gulp.task('dist', gulp.series('clean', 'typescript', 'copy', 'uglify'));
 
 gulp.task('watch', function() {
   const watchingPath = path.join(srctDir, '/**/*');
-  const watcher = gulp.watch(watchingPath, gulp.series('typescript', 'copy'));
+  const watcher = gulp.watch(watchingPath, gulp.series('clean', 'typescript', 'copy'));
   watcher.on('change', function(event) {
     console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
   });

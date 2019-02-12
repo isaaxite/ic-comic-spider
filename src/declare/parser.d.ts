@@ -65,6 +65,6 @@ declare namespace parserDto {
      * 搜索漫画
      * @param { string } _keyword
      */
-    search(_keyword: string): Promise<parserDto.SearchListItem>;
+    // static search(_keyword: string): Promise<parserDto.SearchListItem>;
   }
 }

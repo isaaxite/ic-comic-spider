@@ -37,7 +37,7 @@ const parseInfo = program
       Spinner.invoke('warn', 'no such dir');
       process.exit();
     }
-    config.outDir = outDir;
+    config.outDir = path.isAbsolute(outDir) ? outDir : path.join(process.cwd(), outDir);
     invokeStatus.out = true;
   })
   .option('--catalogs [url]', 'catalog url list', (sender) => {

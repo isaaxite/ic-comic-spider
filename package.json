@@ -36,6 +36,7 @@
     "babel-polyfill": "^6.26.0",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
+    "iconv-lite": "^0.4.24",
     "ora": "^3.0.0",
     "sharp": "^0.21.1"
   },

@@ -59,7 +59,6 @@ export const getSavePath = (_comicName: string, _chapterDir?: string, _filename?
       fs.mkdirSync(chapterDir);
     }
   }
-  
   return { outDir, comicDir, chapterDir, savePath };
 };
 

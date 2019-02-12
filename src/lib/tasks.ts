@@ -20,11 +20,15 @@ export default class Tasks {
 
   public async downloadChapter(_comicName: string, _chapterName: string, _chapterUrl: string, _options?: any) {
     const { parser } = store.get();
+    const options = _options || {};
+    const pageNo: number = options.index || 1;
     const imgSrcInfo = await parser.chapterPage(_chapterUrl, {
+      pageNo,
       chapterName: _chapterName
     });
     if (imgSrcInfo) {
-      const { savePath } = helper.getSavePath(_comicName, _chapterName, imgSrcInfo.content);
+      const filename = `${pageNo}.${imgSrcInfo.format}`;
+      const { savePath } = helper.getSavePath(_comicName, _chapterName, filename);
       // if (_options && _options.handleError) {
       //   console.log(savePath);
       // }
@@ -35,7 +39,10 @@ export default class Tasks {
 
       if (isBoolean(imgSrcInfo.isLast) && !imgSrcInfo.isLast) {
         // console.log('imgSrcInfo.next:', imgSrcInfo.next);
-        await this.downloadChapter(_comicName, _chapterName, imgSrcInfo.next);
+        const newPageNo = pageNo + 1;
+        await this.downloadChapter(_comicName, _chapterName, imgSrcInfo.next, {
+          index: newPageNo
+        });
       }
     }
   }
@@ -62,38 +69,26 @@ export default class Tasks {
     for (const catalogUrl of catalogUrlList) {
       const parser = new Parser(catalogUrl);
       store.set({ parser });
-
-      const { enName } = helper.parseCataLogUrl(catalogUrl);
-      Spinner.invoke('start', `[${enName}] download...`);
+      Spinner.invoke('start', 'parsing...');
 
       const { chapterList, comicName } = await parser.catalog(catalogUrl);
-
       store.set({ comicName });
+      Spinner.invoke('start', `[${comicName}] download...`);
 
       const realChapterList = helper.clipChapterList(chapterList);
       await this.downloadComic(realChapterList, comicName);
       const errorHandler = ErrorHandler.getIns();
       await errorHandler.handleErrors();
-      Spinner.invoke('succeed', `[${enName}] finish!`);
+      Spinner.invoke('succeed', `[${comicName}] finish!`);
       // process.exit();
     }
   }
   
   public async search() {
-    let searchList: any[] = [];
-    const { keyword } = store.get();
-    const parserDirPath = path.join(__dirname, './parser');
-    const parserNames = fs.readdirSync(parserDirPath).filter((item) => {
-      return !['index.js'].includes(item);
-    });
-    for (const parserName of parserNames) {
-      const parserPath = path.join(parserDirPath, parserName);
-      const parser = require(parserPath).default;
-      const list: any[] = await parser.search(keyword);
-      searchList.push(...list);
-    };
     const spinner = Spinner.getIns();
+    const { keyword } = store.get();
     spinner.start(`search ${keyword}...`);
+    const searchList: any[] = await Parser.search(keyword);
     
     spinner.succeed([
       `search result: ${searchList.length || 'null'}`,

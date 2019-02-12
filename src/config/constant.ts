@@ -23,7 +23,9 @@ export const ERROR_TYPES = {
 };
 
 export const HOST_NAME = {
-  verydm: 'www.verydm.com'
+  verydm: 'www.verydm.com',
+  kukudm: 'comic.kukudm.com',
+  chuixue: 'www.chuixue.net'
 };
 
 export const TIME_OUT = 7 * 1000;

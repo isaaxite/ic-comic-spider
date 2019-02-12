@@ -9,6 +9,37 @@ npm i -g ic-comic-spider
 ## 快速使用
 - 登录 [http://www.verydm.com](http://www.verydm.com) 找需要的漫画，复制目录页链接，例如《亚人》的目录：http://www.verydm.com/manhua/yaren
 
+1. 使用脚本搜索漫画：
+
+```
+icsdr --search xxx
+```
+比如：
+```
+icsdr --search 火影
+✔ search result: 10
+火影忍者: http://www.verydm.com/manhua/huoyingrenzhe
+博人传-火影次世代: http://www.chuixue.net/manhua/30841
+火影同人-我的第一次: http://www.chuixue.net/manhua/27308
+火影忍者外传: http://www.chuixue.net/manhua/23713
+火影同人 An Important Day: http://www.chuixue.net/manhua/26541
+火影忍者特典: http://www.chuixue.net/manhua/24324
+火影同人四格: http://www.chuixue.net/manhua/23205
+火影忍者-者之书: http://www.chuixue.net/manhua/8579
+火影同人短篇: http://www.chuixue.net/manhua/12739
+火影忍者: http://comic.kukudm.com/comiclist/3/
+```
+
+2. 登陆相关网站搜索资源，并复制目录url。当前支持的资源站点如下：
+```
+  吹雪漫画：http://www.chuixue.net
+
+  非常爱漫：http://www.verydm.com/
+
+  kuku漫画：http://comic.kukudm.com/
+```
+
+
 - 下载漫画
 ```
 icsdr http://www.verydm.com/manhua/yaren

@@ -1,7 +1,9 @@
 import * as url from 'url';
 import Verydm from './verydm/index';
+import Kukudm from './kukudm/index';
 import parserDto = require('../../declare/parser');
 import { HOST_NAME } from '../../config/constant';
+import Chuixue from './chuixue';
 
 export default class Parser implements parserDto.BaseParser {
   private baseParser: parserDto.BaseParser;
@@ -11,7 +13,16 @@ export default class Parser implements parserDto.BaseParser {
     switch (hostname) {
       case HOST_NAME.verydm:
         this.baseParser = new Verydm();
+        break;
       
+      case HOST_NAME.kukudm:
+        this.baseParser = new Kukudm();
+        break;
+
+      case HOST_NAME.chuixue:
+        this.baseParser = new Chuixue();
+        break;
+
       default:
         this.baseParser = new Verydm();
     }
@@ -48,7 +59,13 @@ export default class Parser implements parserDto.BaseParser {
    * 搜索漫画
    * @param { string } _keyword
    */
-  public async search(_keyword: string) {
-    return this.baseParser.search(_keyword);
+  static async search(_keyword: string) {
+    const searchRes: any = [];
+    const searchFnList = [Verydm.search, Chuixue.search, Kukudm.search];
+    for (const _search of searchFnList) {
+      const list = await _search(_keyword);
+      searchRes.push(...list);
+    }
+    return searchRes;
   }
 }

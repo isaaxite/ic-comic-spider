@@ -1,4 +1,5 @@
 import * as url from 'url';
+import * as path from 'path';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as helper from '../../helper';
@@ -7,10 +8,10 @@ import ErrorHandler from '../../error';
 import parserDto = require('../../../declare/parser');
 import store from '../../store';
 import Spinner from '../../spinner';
+import * as iconv from 'iconv-lite';
+import { cache } from 'sharp';
 
-export default class Verydm implements parserDto.BaseParser {
-  constructor() {}
-
+export default class Kukudm {
   /**
    * 解析漫画目录
    * @param { string } _url 漫画目录的链接
@@ -18,22 +19,31 @@ export default class Verydm implements parserDto.BaseParser {
   public async catalog(_url: string) {
     const { protocol, hostname } = url.parse(_url);
     const origin = `${protocol}//${hostname}`;
-    const promise = axios.get(_url)
+    const reqOptions = {
+      method: 'GET',
+      url: _url,
+      responseType: 'arraybuffer'
+    };
+    const promise = axios.request(reqOptions)
       .then((resp) => {
-        const doc = cheerio.load(resp.data);
-        const comicName = doc('.comic-name h1').text();
-        const chapterEles = doc('.chapters li > a');
-        const chapterList = helper.mapEles(chapterEles, (_ele: any, _index: number) => {
-          return {
-            title: _ele.attr('title'),
-            url: url.resolve(origin, _ele.attr('href'))
-          };
-        });
-        chapterList.reverse();
+        const data = iconv.decode(resp.data, 'GBK');
+        const doc = cheerio.load(data);
+        const matched = data.match(/\<td colspan=\'2\'\>(.*)漫画\<\/td\>/);
+        const comicName = matched ? (matched[1] || '') : '';
+        const chapterEles = doc('#comiclistn dd > a');
+        const chapterList: any[] = [];
+        for (let i = 0, len = chapterEles.length; i < len; i += 4) {
+          const itemEle = chapterEles.eq(i);
+          chapterList.push({
+            title: itemEle.text(),
+            url: url.resolve(origin, itemEle.attr('href'))
+          });
+        }
         const result: parserDto.CatalogParseResult = {
           comicName,
           chapterList
         };
+        chapterList.reverse();
         return Promise.resolve(result);
       });
 
@@ -48,13 +58,15 @@ export default class Verydm implements parserDto.BaseParser {
   public async chapterPage(_url: string, _options: any) {
     const { protocol, hostname } = url.parse(_url);
     const origin = `${protocol}//${hostname}`;
+    const imgPrefix = 'http://n8.1whour.com/';
     const CancelToken = axios.CancelToken;
     const source = CancelToken.source();
     const reqOptions = {
       method: 'GET',
       url: _url,
       timeout: TIME_OUT,
-      cancelToken: source.token
+      cancelToken: source.token,
+      responseType: 'arraybuffer'
     };
     const setError = () => {
       const errorHandler = ErrorHandler.getIns();
@@ -70,15 +82,18 @@ export default class Verydm implements parserDto.BaseParser {
       setError();
     }, TIME_OUT + 2 * 1000);
     const promise: Promise<parserDto.ImgInfo | undefined> = axios.request(reqOptions).then((resp) => {
-      const doc = cheerio.load(resp.data);
-      const nextPage = resp.data.match(/<a href="(.*)">下一页(?:<\/a>)?/)[1];
-      const isLast = nextPage.includes('已经是最后一页了');
-      const imgSrc = doc('#mainImage2').attr('src');
+      const html = iconv.decode(resp.data, 'GBK');
+      const doc = cheerio.load(html);
+      const nextPage = doc(`table[bgcolor='#FFFFFF'] a`).last().attr('href');
+      const matched = this.matchImgSrc(html);
+      const imgSrcPart = matched ? (matched[1] || '') : '';
+      const imgSrc = encodeURI(url.resolve(imgPrefix, imgSrcPart));
+      const isLast = nextPage.includes('/exit/exit.htm');
       const parsedUrl = helper.parseUrl(imgSrc);
       const imgInfo: parserDto.ImgInfo = {
         isLast,
         referer: _url,
-        next: url.resolve(origin, nextPage),
+        next: encodeURI(url.resolve(origin, nextPage)),
         ...parsedUrl
       };
       return Promise.resolve(imgInfo);
@@ -95,7 +110,7 @@ export default class Verydm implements parserDto.BaseParser {
         return this.chapterPage(_url, _options);
       } else {
         Spinner.invoke('warn', `parse fail: [${_options.chapterName}]${_url}`);
-        setError();
+        // setError();
       }
     }).finally(() => {
       clearTimeout(noRespHandler);
@@ -154,27 +169,53 @@ export default class Verydm implements parserDto.BaseParser {
     return promise;
   }
 
+  static encodeText(_text: string) {
+    const buf = iconv.encode(_text, 'GBK');
+    const hex = buf.toString('hex');
+    const chars = hex.split('');
+    let text = '';
+    for (let i = 0, len = chars.length; i < len; i += 2) {
+      const char = chars.slice(i, i + 2).join('');
+      text += `%${char.toUpperCase()}`;
+    }
+    return text;
+  }
+
   /**
    * 搜索漫画
    * @param { string } _keyword
    */
   static async search(_keyword: string) {
-    const searchUrl = `http://www.verydm.com/index.php?r=comic%2Fsearch&keyword=${encodeURIComponent(_keyword)}`;
-    const promise = axios.get(searchUrl)
+    const keyword = Kukudm.encodeText(_keyword);
+    const searchUrl = `http://so.kukudm.com/search.asp?kw=${keyword}`;
+    const reqOptions = {
+      method: 'GET',
+      url: searchUrl,
+      responseType: 'arraybuffer'
+    };
+    const promise = axios.request(reqOptions)
       .then((resp) => {
-        const doc = cheerio.load(resp.data);
-        const eles = doc('.main-container .list li');
-        const searchList: parserDto.SearchListItem[] = helper.mapEles(eles, (_ele: any, _index: number) => {
-          const itemEle = cheerio.load(`<li>${_ele}</li>`);
-          const name = itemEle('p > a').text();
-          const src = itemEle('li > a').attr('href');
-          return { name, src };
-        }).filter((item: any) => {
-          return item.name;
-        });
+        const data = iconv.decode(resp.data, 'GBK');
+        const doc = cheerio.load(data);
+        const eles = doc('#comicmain > dd > a');
+        const searchList: parserDto.SearchListItem[] = [];
+        for(let i = 0, len = eles.length; i < len; i += 3) {
+          const itemEle = eles.eq(i + 1);
+          const src = itemEle.attr('href');
+          const name = itemEle.text().replace('漫画电信', '');
+          searchList.push({ name, src });
+        }
         return searchList;
       });
 
     return promise;
+  }
+
+  private matchImgSrc(_html: string) {
+    let matched = _html.match(/\<img id\=comicpic name\=comicpic src\=.*\"(.*)\'\>/);
+    if (!matched) {
+      matched = _html.match(/\<IMG SRC\=\'.*\"(.*)\'\>/);
+    }
+    return matched;
   }
 }
